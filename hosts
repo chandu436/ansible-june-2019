@@ -1,0 +1,1 @@
+172.31.83.9 ansible_user=ec2-user ansible_private_key_file=./junebatch.pem

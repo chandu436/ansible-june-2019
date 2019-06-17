@@ -3,22 +3,11 @@
    become: true
    tasks:
      - name: Installing Packages
-       yum: 
+       yum:
          name: "{{item}}"
-         state: present
+         state: absent
        with_items:
          - git
          - docker
          - httpd
          - java-1.8.0-openjdk-devel
-     - name: Starting Docker and apache
-       service:
-         name: "{{item}}"
-         state: started  
-       with_items:
-         - docker
-         - httpd
-     - name: coping index.html
-       copy:
-         src: ./index.html
-         dest: /var/www/html 

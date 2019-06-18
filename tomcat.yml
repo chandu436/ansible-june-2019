@@ -1,7 +1,7 @@
 ---
- - hosts: 172.31.83.9
+ - hosts: all
    become: true
-   vars_files: 
+   vars_files:
      - ./vars.yml
    tasks:
      - name: Installing java
@@ -9,8 +9,8 @@
          name: java-{{java_version}}-openjdk-devel
          state: present
      - name: Updating java Version
-       alternatives: 
-         name: java 
+       alternatives:
+         name: java
          path: /usr/lib/jvm/jre-{{java_version}}-openjdk.x86_64/bin/java
      - name: Updating javac Version
        alternatives:
@@ -25,5 +25,29 @@
          group: tomcat
      - name: Dowloading tomcat
        get_url:
-         url: http://mirrors.estointernet.in/apache/tomcat/tomcat-8/v8.5.42/bin/apache-tomcat-8.5.42.tar.gz
-         dest: /opt/apache-tomcat-8.5.42.tar.gz
+         url: http://mirrors.estointernet.in/apache/tomcat/tomcat-8/v{{tomcat_version}}/bin/apache-tomcat-{{tomcat_version}}.tar.gz
+         dest: /opt/apache-tomcat-{{tomcat_version}}.tar.gz
+     - name: Extracting Tomcat tar file
+       command: chdir=/usr/share tar xvzf /opt/apache-tomcat-{{tomcat_version}}.tar.gz -C /opt/ creates=/opt/apache-tomcat-{{tomcat_version}}
+     - name: Symlink between repos
+       file: 
+         src: /opt/apache-tomcat-{{tomcat_version}}
+         path: /usr/share/tomcat
+         state: link
+     - name: Changing ownership of tomcat
+       file: 
+         path: /usr/share/tomcat/
+         owner: tomcat
+         group: tomcat
+         state: directory
+         recurse: yes
+     - name: coping script to init.d repo
+       copy:
+         src: ./tomcat.sh
+         dest: /etc/init.d/tomcat
+         mode: 0755
+     - name: Sarting tomcat
+       service: 
+         name: tomcat
+         state: started
+         enabled: yes

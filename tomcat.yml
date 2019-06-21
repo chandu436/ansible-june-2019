@@ -8,14 +8,23 @@
        yum:
          name: java-{{java_version}}-openjdk-devel
          state: present
+       tags:
+         - task-1
+     - name: 
+       debug:
+         msg: installing java completed
      - name: Updating java Version
        alternatives:
          name: java
          path: /usr/lib/jvm/jre-{{java_version}}-openjdk.x86_64/bin/java
+       tags:
+         - task-2
      - name: Updating javac Version
        alternatives:
          name: javac
          path: /usr/lib/jvm/java-{{java_version}}-openjdk.x86_64/bin/javac
+       tags:
+         - task-3
      - name: Creating Tomcat Group
        group:
          name: tomcat
@@ -46,8 +55,21 @@
          src: ./tomcat.sh
          dest: /etc/init.d/tomcat
          mode: 0755
+       tags:
+         - tag-1
      - name: Sarting tomcat
        service: 
          name: tomcat
          state: started
          enabled: yes
+     - name: Coping war file to webapps folder
+       copy:
+         src: /home/ubuntu/sample-app/target/myapp-1.0.1.war
+         dest: /usr/share/tomcat/webapps/app.war
+       notify:
+         - Restaring tomcat server
+   handlers:
+     - name: Restaring tomcat server 
+       service:
+         name: tomcat
+         state: restarted
